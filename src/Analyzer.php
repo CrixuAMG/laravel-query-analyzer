@@ -34,25 +34,22 @@ class Analyzer
         self::setQueries(collect($queries));
 
         $uniqueQueries = self::getUniqueQueries();
+        $duplicateQueries = self::getDuplicates();
 
-        $queryTypes = [
-            'select',
-            'insert',
-            'update',
-            'delete',
-        ];
         $groupedByType = [];
+        $queryTypes = (array)config('query-analyzer.query_types');
         foreach ($queryTypes as $queryType) {
             $groupedByType[$queryType] = self::getQueriesByType($queryType);
         }
 
         return self::checkData([
-            'by_type'            => $groupedByType,
-            'total_count'        => self::$queries->count(),
-            'duplicate_queries'  => self::getDuplicates(),
-            'unique_queries'     => $uniqueQueries,
-            'unique_query_count' => count($uniqueQueries),
-            'long_queries'       => self::getLongQueries(),
+            'by_type'               => $groupedByType,
+            'total_count'           => self::$queries->count(),
+            'duplicate_queries'     => $duplicateQueries,
+            'duplicate_query_count' => \count($duplicateQueries),
+            'unique_queries'        => $uniqueQueries,
+            'unique_query_count'    => \count($uniqueQueries),
+            'long_queries'          => self::getLongQueries(),
         ]);
     }
 
@@ -104,6 +101,21 @@ class Analyzer
      */
     private static function checkData(array $data): array
     {
+        $highQueryCount = (int)config('query-logger.high_query_count');
+        if ($data['total_count'] > $highQueryCount) {
+            $data['warnings'][] = sprintf(
+                'total_count is %u too high, try to lower it!',
+                $data['total_count'] - $highQueryCount
+            );
+        }
+        $highDuplicateQueryCount = (int)config('query-logger.high_duplicates_query_count');
+        if ($data['duplicate_query_count'] > $highDuplicateQueryCount) {
+            $data['warnings'][] = sprintf(
+                'duplicate_query_count is %u too high, try to lower it!',
+                $data['duplicate_query_count'] - $highDuplicateQueryCount
+            );
+        }
+
         dd($data);
     }
 }
