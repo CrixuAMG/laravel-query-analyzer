@@ -25,6 +25,38 @@ class Analyzer
     }
 
     /**
+     * @param array $queries
+     *
+     * @return array
+     */
+    public static function analyzeQueries(array $queries): array
+    {
+        self::setQueries(collect($queries));
+
+        $uniqueQueries = self::getUniqueQueries();
+
+        $queryTypes = [
+            'select',
+            'insert',
+            'update',
+            'delete',
+        ];
+        $groupedByType = [];
+        foreach ($queryTypes as $queryType) {
+            $groupedByType[$queryType] = self::getQueriesByType($queryType);
+        }
+
+        return self::checkData([
+            'by_type'            => $groupedByType,
+            'total_count'        => self::$queries->count(),
+            'duplicate_queries'  => self::getDuplicates(),
+            'unique_queries'     => $uniqueQueries,
+            'unique_query_count' => count($uniqueQueries),
+            'long_queries'       => self::getLongQueries(),
+        ]);
+    }
+
+    /**
      * @param string $queryType
      *
      * @return array
@@ -39,41 +71,6 @@ class Analyzer
             }
         )
             ->all();
-    }
-
-    /**
-     * @param array $queries
-     */
-    public static function analyzeQueries(array $queries)
-    {
-        self::setQueries(collect($queries));
-
-        $uniqueQueries = self::getUniqueQueries();
-        $longQueries = self::getLongQueries();
-        $duplicates = self::getDuplicates();
-
-        $queryTypes = [
-            'select',
-            'insert',
-            'update',
-            'delete',
-        ];
-        $groupedByType = [];
-        foreach ($queryTypes as $queryType) {
-            $groupedByType[$queryType] = self::getQueriesByType($queryType);
-        }
-
-        $returnData = [
-            'by_type'            => $groupedByType,
-            'total_count'        => self::$queries->count(),
-            'duplicate_queries'  => $duplicates,
-            'unique_queries'     => $uniqueQueries,
-            'unique_query_count' => count($uniqueQueries),
-            'long_queries'       => $longQueries,
-
-        ];
-
-        dd($returnData);
     }
 
     /**
@@ -98,5 +95,15 @@ class Analyzer
     private static function getDuplicates(): array
     {
         return self::$queries->groupBy('query')->all();
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    private static function checkData(array $data): array
+    {
+        dd($data);
     }
 }
