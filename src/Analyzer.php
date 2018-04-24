@@ -84,6 +84,6 @@ class Analyzer
      */
     private static function getLongQueries(): array
     {
-        return self::$queries->sortByDesc('time')->take(5)->all());
+        return self::$queries->sortByDesc('time')->take(5)->all();
     }
 }
