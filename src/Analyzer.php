@@ -33,7 +33,9 @@ class Analyzer
     {
         return self::$queries->filter(
             function ($query) use ($queryType) {
-                return stripos($query['query'], $queryType) !== false;
+                // Use the queryType variable in combination with a space
+                // to prevent matching with for example `deleted_at`
+                return stripos($query['query'], sprintf('%s ', $queryType)) !== false;
             }
         )
             ->all();
