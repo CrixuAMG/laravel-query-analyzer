@@ -1,0 +1,35 @@
+{
+  "name": "crixuamg/laravel-query-analyzer",
+  "description": "",
+  "license": "MIT",
+  "type": "library",
+  "keywords": [
+    "laravel",
+    "query",
+    "analyzer"
+  ],
+  "authors": [
+    {
+      "name": "Christian Kaal",
+      "email": "christiankaal@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "laravel/framework": "5.*"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "CrixuAMG\\QueryAnalyzer\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "CrixuAMG\\QueryAnalyzer\\QueryAnalyzerServiceProvider"
+      ]
+    }
+  }
+}
