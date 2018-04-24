@@ -4,6 +4,7 @@ namespace CrixuAMG\QueryAnalyzer;
 
 use CrixuAMG\QueryAnalyzer\Exceptions\QueryAnalyzerException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Class Analyzer
@@ -51,7 +52,7 @@ class Analyzer
             'duplicate_query_count' => self::getDuplicateCount($duplicateQueries),
             'unique_queries'        => $uniqueQueries,
             'unique_query_count'    => \count($uniqueQueries),
-            'long_queries'          => self::getLongQueries(),
+            'longest_queries'       => self::getLongQueries(),
         ]);
     }
 
@@ -128,6 +129,20 @@ class Analyzer
 
     /**
      * @param array $data
+     */
+    public static function saveFile(array $data)
+    {
+        Storage::disk('local')->put(
+            sprintf(
+                'query_log/query_data.%s.json',
+                now()->toDateTimeString()
+            ),
+            json_encode($data, JSON_PRETTY_PRINT)
+        );
+    }
+
+    /**
+     * @param array $data
      *
      * @return array
      * @throws QueryAnalyzerException
@@ -142,20 +157,22 @@ class Analyzer
             );
         }
         $highDuplicateQueryCount = (int)config('query-logger.high_duplicates_query_count');
-        if ($data['high_duplicates_query_count'] > $highDuplicateQueryCount) {
+        if ($data['duplicate_query_count'] > $highDuplicateQueryCount) {
             $data['warnings'][] = sprintf(
                 'duplicate_query_count is %u too high, try to lower it!',
-                $data['high_duplicates_query_count'] - $highDuplicateQueryCount
+                $data['duplicate_query_count'] - $highDuplicateQueryCount
             );
         }
 
-        // dd($data);
+        if (isset($data['warnings'])) {
+            self::saveFile($data);
 
-        if ((bool)config('query-analyzer.strict') && isset($data['warnings'])) {
-            throw new QueryAnalyzerException(sprintf(
-                'Query Analyzer identified several issues, please check the data: %s',
-                json_encode($data)
-            ));
+            if ((bool)config('query-analyzer.strict')) {
+                throw new QueryAnalyzerException(
+                    'Query Analyzer identified several issues, please check the data.',
+                    500
+                );
+            }
         }
 
         return $data;
