@@ -27,13 +27,16 @@ class Analyzer
     /**
      * @param string $queryType
      *
-     * @return mixed
+     * @return array
      */
-    private static function getQueriesByType(string $queryType)
+    private static function getQueriesByType(string $queryType): array
     {
-        return self::$queries->filter(function ($query) use ($queryType) {
-            return stripos($query['query'], $queryType) !== false;
-        });
+        return self::$queries->filter(
+            function ($query) use ($queryType) {
+                return stripos($query['query'], $queryType) !== false;
+            }
+        )
+            ->all();
     }
 
     /**
