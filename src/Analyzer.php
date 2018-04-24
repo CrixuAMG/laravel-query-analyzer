@@ -45,7 +45,7 @@ class Analyzer
 
         $uniqueQueries = self::getUniqueQueries();
         $longQueries = self::getLongQueries();
-        $duplicates = $queries->groupBy('query')->all();
+        $duplicates = self::getDuplicates();
 
         $queryTypes = [
             'select',
@@ -85,5 +85,13 @@ class Analyzer
     private static function getLongQueries(): array
     {
         return self::$queries->sortByDesc('time')->take(5)->all();
+    }
+
+    /**
+     * @return array
+     */
+    private static function getDuplicates(): array
+    {
+        return self::$queries->groupBy('query')->all();
     }
 }
