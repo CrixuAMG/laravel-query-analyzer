@@ -149,14 +149,14 @@ class Analyzer
      */
     private static function checkData(array $data): array
     {
-        $highQueryCount = (int)config('query-logger.high_query_count');
+        $highQueryCount = (int)config('query-analyzer.high_query_count');
         if ($data['total_count'] > $highQueryCount) {
             $data['warnings'][] = sprintf(
                 'total_count is %u too high, try to lower it!',
                 $data['total_count'] - $highQueryCount
             );
         }
-        $highDuplicateQueryCount = (int)config('query-logger.high_duplicates_query_count');
+        $highDuplicateQueryCount = (int)config('query-analyzer.high_duplicates_query_count');
         if ($data['duplicate_query_count'] > $highDuplicateQueryCount) {
             $data['warnings'][] = sprintf(
                 'duplicate_query_count is %u too high, try to lower it!',
