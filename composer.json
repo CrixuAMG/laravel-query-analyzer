@@ -14,10 +14,6 @@
       "email": "christiankaal@gmail.com"
     }
   ],
-  "require": {
-    "php": ">=7.0",
-    "laravel/framework": "5.*"
-  },
   "minimum-stability": "stable",
   "prefer-stable": true,
   "autoload": {
