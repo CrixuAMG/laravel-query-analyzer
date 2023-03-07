@@ -2,9 +2,9 @@
 
 namespace CrixuAMG\QueryAnalyzer;
 
-use CrixuAMG\QueryAnalyzer\Exceptions\QueryAnalyzerException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use CrixuAMG\QueryAnalyzer\Exceptions\QueryAnalyzerException;
 
 /**
  * Class Analyzer
@@ -45,7 +45,14 @@ class Analyzer
             $groupedByType[$queryType] = self::getQueriesByType($queryType);
         }
 
+        $route = request()->route();
+        $request = implode('|', array_merge(
+            $route->methods(),
+            [$route->getDomain(), $route->uri(), request()->ip()]
+        ));
+
         return self::checkData([
+            'request'               => $request,
             'by_type'               => $groupedByType,
             'total_count'           => self::$queries->count(),
             'duplicate_queries'     => $duplicateQueries,
@@ -101,7 +108,7 @@ class Analyzer
         foreach ($queries as $index => $query) {
             if (!isset($uniques[$query['query']])) {
                 $uniques[$query['query']] = $query;
-            } elseif (!isset($duplicates[$query['query']])) {
+            } else if (!isset($duplicates[$query['query']])) {
                 $duplicates[$query['query']][$index] = $uniques[$query['query']];
             } else {
                 $duplicates[$query['query']][$index] = $query;
@@ -152,14 +159,14 @@ class Analyzer
         $highQueryCount = (int)config('query-analyzer.high_query_count');
         if ($data['total_count'] > $highQueryCount) {
             $data['warnings'][] = sprintf(
-                'total_count is %u too high, try to lower it!',
+                'total_count is %u too high!',
                 $data['total_count'] - $highQueryCount
             );
         }
         $highDuplicateQueryCount = (int)config('query-analyzer.high_duplicates_query_count');
         if ($data['duplicate_query_count'] > $highDuplicateQueryCount) {
             $data['warnings'][] = sprintf(
-                'duplicate_query_count is %u too high, try to lower it!',
+                'duplicate_query_count is %u too high!',
                 $data['duplicate_query_count'] - $highDuplicateQueryCount
             );
         }
@@ -169,7 +176,7 @@ class Analyzer
 
             if ((bool)config('query-analyzer.strict')) {
                 throw new QueryAnalyzerException(
-                    'Query Analyzer identified several issues, please check the data.',
+                    'Query Analyzer identified several issues, please check the logs.',
                     500
                 );
             }
